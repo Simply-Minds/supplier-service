@@ -1,0 +1,320 @@
+openapi: 3.0.1
+info:
+  title: Supplier Catalog API
+  description: API for managing suppliers with CRUD operations and standardized error handling.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+paths:
+  /suppliers:
+    get:
+      summary: Retrieve a list of suppliers
+      description: Get all suppliers with support for filtering and pagination.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 0
+            minimum: 0
+          description: Page number for pagination (default is 0).
+        - in: query
+          name: size
+          schema:
+            type: integer
+            example: 10
+            minimum: 1
+            maximum: 100
+          description: Number of suppliers per page (default is 10).
+        - in: query
+          name: filter
+          schema:
+            type: string
+            example: "Supplier"
+            maxLength: 50
+          description: Filter to apply.
+        - in: query
+          name: search
+          schema:
+            type: string
+            example: "Electronic"
+            maxLength: 100
+          description: Search for suppliers by name or other fields.
+      responses:
+        '200':
+          description: List of suppliers retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierListResponseDTO'
+        '400':
+          description: Invalid request parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+    post:
+      summary: Create a new supplier
+      description: Add a new supplier to the catalog.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Supplier'
+      responses:
+        '201':
+          description: Supplier created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponseDTO'
+        '400':
+          description: Invalid request data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+  /suppliers/{id}:
+    get:
+      summary: Retrieve a supplier by ID
+      description: Get details of a specific supplier using its ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 101
+            minimum: 1
+          description: Supplier ID.
+      responses:
+        '200':
+          description: Supplier details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponseDTO'
+        '404':
+          description: Supplier not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+    put:
+      summary: Update supplier details
+      description: Modify an existing supplier’s information.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 101
+            minimum: 1
+          description: Supplier ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Supplier'
+      responses:
+        '200':
+          description: Supplier updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResponseDTO'
+        '400':
+          description: Invalid request data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+        '404':
+          description: Supplier not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+    delete:
+      summary: Remove a supplier
+      description: Delete a supplier from the catalog using its ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 101
+            minimum: 1
+          description: Supplier ID.
+      responses:
+        '200':
+          description: Supplier deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseDTO'
+        '404':
+          description: Supplier not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+components:
+  schemas:
+    Supplier:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the supplier.
+          example: 101
+        name:
+          type: string
+          description: Supplier name.
+          example: "Electric Supplies"
+        address:
+          type: string
+          description: Supplier address.
+          example: "123 Main Street, City"
+        phone:
+          type: string
+          description: Supplier contact number.
+          example: "+1234567890"
+        email:
+          type: string
+          description: Supplier email.
+          example: "supplier@example.com"
+        status:
+          type: string
+          description: Supplier status (e.g., active, inactive).
+          example: "Active"
+        location:
+          type: string
+          description: Supplier location.
+          example: "Warehouse District"
+    SupplierResponseDTO:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/Supplier'
+        errorCode:
+          type: string
+          nullable: true
+          example: null
+        errorMessage:
+          type: string
+          nullable: true
+          example: null
+
+    SupplierListResponseDTO:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/Supplier'
+          errorCode:
+            type: string
+            nullable: true
+            example: null
+          errorMessage:
+            type: string
+            nullable: true
+            example: null
+          pagination:
+            $ref: '#/components/schemas/PaginationDTO'
+
+    ErrorResponseDTO:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: false
+          data:
+            type: object
+            example: null
+          errorCode:
+            type: string
+            example: "GENERR0001"
+          errorMessage:
+            type: string
+            example: "An unexpected error occurred."
+
+    SuccessResponseDTO:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          data:
+            type: object
+            example: null
+          errorCode:
+            type: string
+            nullable: true
+            example: null
+          errorMessage:
+            type: string
+            nullable: true
+            example: null
+
+    PaginationDTO:
+        type: object
+        properties:
+          totalObjects:
+            type: integer
+            example: 100
+            description: "Total number of objects available."
+          totalPages:
+            type: integer
+            example: 10
+            description: "Total number of pages available."
+          currentPage:
+            type: integer
+            example: 1
+            description: "Current page number being viewed."
+          currentSize:
+            type: integer
+            example: 10
+            description: "Number of objects per page."

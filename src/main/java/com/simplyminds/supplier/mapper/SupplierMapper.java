@@ -1,42 +1,38 @@
 package com.simplyminds.supplier.mapper;
 
-
 import com.simplyminds.model.Supplier;
-
 import com.simplyminds.supplier.entity.SupplierEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+import java.util.List;
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SupplierMapper {
 
         /**
-         * Map a supplier entity to a SupplierDto.
+         * Map a SupplierEntity to a Supplier DTO.
          *
-         * @param SupplierEntity the supplier entity
-         * @return the corresponding SupplierDto
+         * @param supplierEntity the supplier entity
+         * @return the corresponding Supplier DTO
          */
         @Mapping(source = "supplierId", target = "id")
-        Supplier supplierEntityToSupplierDTO(SupplierEntity SupplierEntity);
+        @Mapping(source = "productIds", target = "productId")  // Explicit mapping
+        Supplier supplierEntityToSupplierDTO(SupplierEntity supplierEntity);
 
         /**
-         * Map a SupplierDto to a Supplier entity.
+         * Map a Supplier DTO to a SupplierEntity.
          *
          * @param supplierDto the supplier DTO
          * @return the corresponding Supplier entity
          */
-        @Mapping(source = "id", target = "categoryId")
+        @Mapping(source = "id", target = "supplierId")
+        @Mapping(source = "productId", target = "productIds")  // Explicit mapping
         SupplierEntity supplierDtoToSupplierEntity(Supplier supplierDto);
 
-//    @Named("supplierDtoIdToEntity")
-//    default SupplierEntity SupplierIdToEntity(Long supplierId) {
-//        if (supplierId == null) {
-//            return null;
-//        }
-//        SupplierEntity supplierEntity = new SupplierEntity();
-//        supplierEntity.setSupplierId(supplierId);
-//        return supplierEntity;
-//    }
-    }
-
+        // Helper method for mapping List<Long> correctly (optional)
+        default List<Long> mapProductIds(List<Long> productIds) {
+                return productIds;
+        }
 }

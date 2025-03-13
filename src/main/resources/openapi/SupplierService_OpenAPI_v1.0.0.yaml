@@ -194,6 +194,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponseDTO'
+  /suppliers/{id}/products:
+    get:
+      summary: Retrieve products supplied by a specific supplier
+      description: Fetch a list of products provided by the supplier identified by the given ID.
+      parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: integer
+              format: int32  # Ensure OpenAPI generates the correct Java type
+              minimum: 1
+
+      responses:
+        '200':
+          description: List of products retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductDto'
+        '404':
+          description: Supplier not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDTO'
+
 components:
   schemas:
     Supplier:
@@ -227,6 +262,12 @@ components:
           type: string
           description: Supplier location.
           example: "Warehouse District"
+        productId:
+          type: array
+          description: Product Ids to get product data
+          items:
+            type: integer
+          example: [ 101, 102, 103 ]
     SupplierResponseDTO:
       type: object
       properties:
@@ -318,3 +359,34 @@ components:
             type: integer
             example: 10
             description: "Number of objects per page."
+    ProductDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 201
+        name:
+          type: string
+          example: "High-quality Steel Rod"
+        sku:
+          type: string
+          example: "STEEL-ROD-123"
+        price:
+          type: number
+          format: double
+          example: 99.99
+        quantityInStock:
+          type: integer
+          example: 50
+        brand:
+          type: string
+          example: "SimplyMinds"
+        categoryId:
+          type: string
+          example: "Construction Materials"
+        productUnitId:
+          type: string
+          example: "kg"
+        description:
+          type: string
+          example: "A durable and corrosion-resistant steel rod"

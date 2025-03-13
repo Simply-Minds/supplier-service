@@ -4,10 +4,9 @@ import com.simplyminds.common.enums.ErrorCode;
 import com.simplyminds.common.exception.ResourceAlreadyExistException;
 import com.simplyminds.common.service.impl.GenericServiceImpl;
 
-import com.simplyminds.model.SuccessResponseDTO;
-import com.simplyminds.model.Supplier;
-import com.simplyminds.model.SupplierListResponseDTO;
-import com.simplyminds.model.SupplierResponseDTO;
+import com.simplyminds.model.*;
+import com.simplyminds.supplier.dto.ProductDTO;
+import com.simplyminds.supplier.client.ProductServiceClient;
 import com.simplyminds.supplier.entity.SupplierEntity;
 import com.simplyminds.supplier.mapper.SupplierMapper;
 import com.simplyminds.supplier.repository.SupplierRepository;
@@ -17,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -47,6 +49,7 @@ public class SupplierServiceImpl extends GenericServiceImpl<SupplierEntity, Supp
 
     private final SupplierMapper supplierMapper;
     private final ServiceHelper serviceHelper;
+    private final ProductServiceClient productServiceClient;
 
     /**
      * Constructs a new SupplierServiceImpl.
@@ -56,10 +59,11 @@ public class SupplierServiceImpl extends GenericServiceImpl<SupplierEntity, Supp
      * @param serviceHelper the service helper
      */
     @Autowired
-    public SupplierServiceImpl(SupplierRepository repository, SupplierMapper supplierMapper, ServiceHelper serviceHelper) {
+    public SupplierServiceImpl(SupplierRepository repository, SupplierMapper supplierMapper, ServiceHelper serviceHelper,ProductServiceClient productServiceClient) {
         super(repository);
         this.supplierMapper = supplierMapper;
         this.serviceHelper = serviceHelper;
+        this.productServiceClient = productServiceClient;
     }
 
     /**
@@ -102,7 +106,10 @@ public class SupplierServiceImpl extends GenericServiceImpl<SupplierEntity, Supp
      */
     @Override
     public SuccessResponseDTO supplerIdDelete(Integer id) {
-        return serviceHelper.setSuccessResponseDto(super.DeleteObject(id), null, null);
+        super.deleteObject(id);
+
+        return serviceHelper.setSuccessResponseDto(true, null, null);
+        // TODO try to learn about multiThreding insetead
     }
 
     /**
@@ -132,6 +139,21 @@ public class SupplierServiceImpl extends GenericServiceImpl<SupplierEntity, Supp
     @Override
     public SupplierResponseDTO suppliersIdGet(Integer id) {
         return serviceHelper.setSupplierResponseDTO(super.objectsIdGet(id), true, null, null);
+    }
+
+    // creating a method to take supplierId and return all products he provides
+
+    @Override
+    public List<ProductDTO> getProductsDto(Long supplierId) {
+        // Fetch supplier details first
+        SupplierResponseDTO supplierResponseDTO = suppliersIdGet(Math.toIntExact(supplierId));
+
+        // Check for missing or invalid supplier data
+        if (supplierResponseDTO == null || supplierResponseDTO.getData() == null || supplierResponseDTO.getData().getId() == null) {
+            return Collections.emptyList();  // Return an empty product list
+        }
+        // Fetch products from the supplier ID in a blocking manner
+        return productServiceClient.getProductById(supplierResponseDTO.getData().getProductId());
     }
 }
 
